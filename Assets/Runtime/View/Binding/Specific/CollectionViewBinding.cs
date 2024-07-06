@@ -10,7 +10,6 @@ namespace JinToliq.Umvvm.View.Binding.Specific
     [SerializeField] private GameObject _prefab;
     [SerializeField] private Transform _parent;
     [SerializeField] private bool _clearChildrenOnAwake = true;
-    [SerializeField] private bool _clearOnDisable = true;
     private readonly List<DataView> _instances = new();
 
     protected override void OnAwakened()
