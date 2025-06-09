@@ -114,7 +114,7 @@ namespace JinToliq.Umvvm.ViewModel
         {
           var contextName = new string(name[..childMarkerIndex]);
           AssertRegistered(_contexts, contextName);
-          return _contexts[contextName].GetProperty(name, name[(childMarkerIndex + 1)..]);
+          return _contexts[contextName].GetProperty(name[(childMarkerIndex + 1)..], masterPath);
         }
 
         var nameString = new string(name);
@@ -246,7 +246,7 @@ namespace JinToliq.Umvvm.ViewModel
         {
           var contextName = new string(name[..childMarkerIndex]);
           AssertRegistered(_contexts, contextName);
-          return _contexts[contextName].GetCommand(name, name[(childMarkerIndex + 1)..]);
+          return _contexts[contextName].GetCommand(name[(childMarkerIndex + 1)..], masterPath);
         }
 
         var nameString = new string(name);
