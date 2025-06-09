@@ -36,6 +36,9 @@ namespace JinToliq.Umvvm.View
       if (template == null)
         throw new($"No UI prefab found by path: {Path.Combine("Resources", path)}");
 
+      // allows to instantiate game object in inactive state and omit auto call OnEnable
+      template.SetActive(false);
+
       var instance = Instantiate(template);
       var view = instance.GetComponent<IUiView>();
       if (view is null)

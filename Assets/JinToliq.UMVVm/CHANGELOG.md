@@ -49,3 +49,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Fixed property path resolving
 ## [3.0.5] 2025-06-10
 ### Fixed command path resolving
+## [3.1.0] 2025-06-10
+### Instantiating views from resources in inactive state
