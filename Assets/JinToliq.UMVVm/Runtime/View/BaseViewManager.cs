@@ -80,11 +80,12 @@ namespace JinToliq.Umvvm.View
           StartCoroutine(DoViewRoutine(item.View, item.View.OnHide(), OnHideComplete));
       }
 
-      if (state.OpenWithState is not null)
-        (view as DataView)?.TrySetState(state.OpenWithState);
-
       FullExpandRectTransform(viewTransform);
-      view.GetGameObject().SetActive(true);
+
+      if (state.OpenWithState is not null)
+        view.OpenWithState(state.OpenWithState);
+      else
+        view.Open();
 
       _activeUi.Add(new(view, state.Index));
       StartCoroutine(DoViewRoutine(view, view.OnOpen(), OnUiOpened));

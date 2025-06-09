@@ -73,7 +73,7 @@ namespace JinToliq.Umvvm.View.Binding
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private IDataView GetView() => (GetComponent<IDataView>() ?? GetComponentInParent<IDataView>()).GetInitialized();
+    private IDataView GetView() => (GetComponent<IDataView>() ?? GetComponentInParent<IDataView>());
 
     private string GetMasterPath()
     {

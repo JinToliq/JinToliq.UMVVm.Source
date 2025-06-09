@@ -6,24 +6,14 @@ namespace JinToliq.Umvvm.View
 {
   public abstract class DataView<TContext> : DataView where TContext : Context, new()
   {
-    protected TContext Context
-    {
-      get => (TContext)BaseContext;
-      set => BaseContext = value;
-    }
+    protected TContext Context { get; set; }
 
-    public override IDataView GetInitialized()
-    {
-      Context ??= new TContext();
-      return this;
-    }
+    protected sealed override Context BaseContext => Context ??= new TContext();
   }
 
   public abstract class DataView : MonoBehaviour, IDataView
   {
-    protected Context BaseContext;
-
-    public abstract IDataView GetInitialized();
+    protected abstract Context BaseContext { get; }
 
     public Property GetProperty(string property) => BaseContext.GetProperty(property);
 
@@ -41,18 +31,12 @@ namespace JinToliq.Umvvm.View
 
     public void TrySetState(object state)
     {
-      if (BaseContext is null)
-        GetInitialized();
-
       if (BaseContext is IContextWithState contextWithState)
         contextWithState.SetStateObject(state);
     }
 
     public void SetState<TState>(TState state)
     {
-      if (BaseContext is null)
-        GetInitialized();
-
       if (BaseContext is IContextWithState contextWithState)
         contextWithState.SetStateObject(state);
       else
@@ -65,9 +49,6 @@ namespace JinToliq.Umvvm.View
 
     private void OnEnable()
     {
-      if (BaseContext is null)
-        GetInitialized();
-
       BaseContext!.Enable();
       OnEnabled();
     }

@@ -41,3 +41,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Removed implementation as Submodule
 ## [3.0.1] 2025-06-09
 ### Fixed State is set after the View is enabled. Now it is possible to set State and instantly use it on enable
+## [3.0.2] 2025-06-09
+### Fixes for Context State setting

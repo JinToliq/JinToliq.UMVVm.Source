@@ -10,6 +10,9 @@ namespace JinToliq.Umvvm.View
     UiType UiType { get; }
     Enum BaseName { get; }
 
+    public void Open();
+    public void OpenWithState(object state);
+
     GameObject GetGameObject();
     RectTransform GetTransform();
 
@@ -31,9 +34,12 @@ namespace JinToliq.Umvvm.View
     [SerializeField] private UiType _uiType;
 
     public abstract TType Name { get; }
+
     public UiType UiType => _uiType;
 
-    public override IDataView GetInitialized() => this;
+    public abstract void Open();
+
+    public abstract void OpenWithState(object state);
 
     public GameObject GetGameObject() => gameObject;
 
@@ -68,6 +74,14 @@ namespace JinToliq.Umvvm.View
 
     public abstract TType Name { get; }
     public UiType UiType => _uiType;
+
+    public void Open() => gameObject.SetActive(true);
+
+    public void OpenWithState(object state)
+    {
+      TrySetState(state);
+      gameObject.SetActive(true);
+    }
 
     public GameObject GetGameObject() => gameObject;
 
