@@ -250,7 +250,7 @@ namespace JinToliq.Umvvm.ViewModel
         }
 
         var nameString = new string(name);
-        AssertRegistered(_properties, nameString);
+        AssertRegistered(_commands, nameString);
         return _commands[nameString];
       }
     }

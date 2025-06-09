@@ -45,5 +45,7 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Fixes for Context State setting
 ## [3.0.3] 2025-06-09
 ### Fixed MasterPath application and converted path resolving to Spans
-## [3.0.4] 2025-06-10
+## [3.0.5] 2025-06-10
 ### Fixed property path resolving
+## [3.0.5] 2025-06-10
+### Fixed command path resolving
