@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using JinToliq.Umvvm.ViewModel.Exceptions;
 
 namespace JinToliq.Umvvm.ViewModel
@@ -8,10 +9,10 @@ namespace JinToliq.Umvvm.ViewModel
   public interface IContext
   {
     void SetParent(IContext parent);
-    Property GetProperty(string name);
-    TProperty GetProperty<TProperty>(string name) where TProperty : Property;
-    Command GetCommand(string name);
-    TCommand GetCommand<TCommand>(string name) where TCommand : ICommand;
+    Property GetProperty(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath);
+    TProperty GetProperty<TProperty>(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath) where TProperty : Property;
+    Command GetCommand(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath);
+    TCommand GetCommand<TCommand>(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath) where TCommand : ICommand;
     void Enable();
     void Disable();
   }
@@ -64,41 +65,72 @@ namespace JinToliq.Umvvm.ViewModel
 
     public void SetParent(IContext parent) => _parent = parent;
 
-    public Property GetProperty(string name)
+    public Property GetProperty(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath)
     {
       AssertNullOrEmpty(name);
 
-      if (name[0] == ParentContextMarker)
+      if (IsStartsWithParentMarker(masterPath))
       {
         if (_parent is null)
-          throw new ContextHasNoParent(name);
+          throw new ContextHasNoParent(PathToString(name, masterPath));
 
-        return _parent.GetProperty(name[1..]);
+        return _parent.GetProperty(name, masterPath[1..]);
       }
 
-      var childMarkerIndex = name.IndexOf(ChildContextMarker);
-      if (childMarkerIndex == 0)
-        throw new InvalidPropertyName(name, GetType());
-
-      if (childMarkerIndex > 0)
+      if (!masterPath.IsEmpty)
       {
-        var contextName = name[..childMarkerIndex];
-        AssertRegistered(_contexts, contextName);
-        return _contexts[contextName].GetProperty(name[(childMarkerIndex + 1)..]);
+        var childMarkerIndex = masterPath.IndexOf(ChildContextMarker);
+        if (childMarkerIndex == 0)
+          throw new InvalidPropertyName(PathToString(name, masterPath), GetType());
+
+        if (childMarkerIndex > 0)
+        {
+          var contextName = new string(masterPath[..childMarkerIndex]);
+          AssertRegistered(_contexts, contextName);
+          return _contexts[contextName].GetProperty(name, masterPath[(childMarkerIndex + 1)..]);
+        }
+        else
+        {
+          var contextName = new string(masterPath);
+          AssertRegistered(_contexts, contextName);
+          return _contexts[contextName].GetProperty(name, ReadOnlySpan<char>.Empty);
+        }
       }
 
-      AssertRegistered(_properties, name);
-      return _properties[name];
+      if (IsStartsWithParentMarker(name))
+      {
+        if (_parent is null)
+          throw new ContextHasNoParent(PathToString(name, masterPath));
+
+        return _parent.GetProperty(name[1..], masterPath);
+      }
+
+      {
+        var childMarkerIndex = name.IndexOf(ChildContextMarker);
+        if (childMarkerIndex == 0)
+          throw new InvalidPropertyName(PathToString(name, masterPath), GetType());
+
+        if (childMarkerIndex > 0)
+        {
+          var contextName = new string(name[..childMarkerIndex]);
+          AssertRegistered(_contexts, contextName);
+          return _contexts[contextName].GetProperty(name, name[(childMarkerIndex + 1)..]);
+        }
+
+        var nameString = new string(name);
+        AssertRegistered(_properties, nameString);
+        return _properties[nameString];
+      }
     }
 
-    public TProperty GetProperty<TProperty>(string name) where TProperty : Property
+    public TProperty GetProperty<TProperty>(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath) where TProperty : Property
     {
-      return GetProperty(name).As<TProperty>();
+      return GetProperty(name, masterPath).As<TProperty>();
     }
 
-    public Command GetCommand(string name) => GetCommandInternal(name).As<Command>();
+    public Command GetCommand(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath) => GetCommandInternal(name, masterPath).As<Command>();
 
-    public TCommand GetCommand<TCommand>(string name) where TCommand : ICommand => GetCommandInternal(name).As<TCommand>();
+    public TCommand GetCommand<TCommand>(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath) where TCommand : ICommand => GetCommandInternal(name, masterPath).As<TCommand>();
 
     public IContext GetChildContext(string name)
     {
@@ -165,37 +197,68 @@ namespace JinToliq.Umvvm.ViewModel
       context.SetParent(this);
     }
 
-    private ICommand GetCommandInternal(string name)
+    private ICommand GetCommandInternal(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath)
     {
       AssertNullOrEmpty(name);
 
-      if (name[0] == ParentContextMarker)
+      if (IsStartsWithParentMarker(masterPath))
       {
         if (_parent is null)
-          throw new ContextHasNoParent(name);
+          throw new ContextHasNoParent(PathToString(name, masterPath));
 
-        return _parent.GetCommand(name[1..]);
+        return _parent.GetCommand(name, masterPath[1..]);
       }
 
-      var childMarkerIndex = name.IndexOf(ChildContextMarker);
-      if (childMarkerIndex == 0)
-        throw new InvalidPropertyName(name, GetType());
-
-      if (childMarkerIndex > 0)
+      if (!masterPath.IsEmpty)
       {
-        var contextName = name[..childMarkerIndex];
-        AssertRegistered(_contexts, contextName);
-        return _contexts[contextName].GetCommand(name[(childMarkerIndex + 1)..]);
+        var childMarkerIndex = masterPath.IndexOf(ChildContextMarker);
+        if (childMarkerIndex == 0)
+          throw new InvalidPropertyName(PathToString(name, masterPath), GetType());
+
+        if (childMarkerIndex > 0)
+        {
+          var contextName = new string(masterPath[..childMarkerIndex]);
+          AssertRegistered(_contexts, contextName);
+          return _contexts[contextName].GetCommand(name, masterPath[(childMarkerIndex + 1)..]);
+        }
+        else
+        {
+          var contextName = new string(masterPath);
+          AssertRegistered(_contexts, contextName);
+          return _contexts[contextName].GetCommand(name, ReadOnlySpan<char>.Empty);
+        }
       }
 
-      AssertRegistered(_commands, name);
-      return _commands[name];
+      if (IsStartsWithParentMarker(name))
+      {
+        if (_parent is null)
+          throw new ContextHasNoParent(PathToString(name, masterPath));
+
+        return _parent.GetCommand(name[1..], masterPath);
+      }
+
+      {
+        var childMarkerIndex = name.IndexOf(ChildContextMarker);
+        if (childMarkerIndex == 0)
+          throw new InvalidPropertyName(PathToString(name, masterPath), GetType());
+
+        if (childMarkerIndex > 0)
+        {
+          var contextName = new string(name[..childMarkerIndex]);
+          AssertRegistered(_contexts, contextName);
+          return _contexts[contextName].GetCommand(name, name[(childMarkerIndex + 1)..]);
+        }
+
+        var nameString = new string(name);
+        AssertRegistered(_properties, nameString);
+        return _commands[nameString];
+      }
     }
 
-    private void AssertNullOrEmpty(string name)
+    private void AssertNullOrEmpty(ReadOnlySpan<char> name)
     {
-      if (string.IsNullOrEmpty(name))
-        throw new InvalidPropertyName(name, GetType());
+      if (name.IsEmpty)
+        throw new InvalidPropertyName("<empty>", GetType());
     }
 
     private void AssertRegistered(IDictionary dictionary, string name)
@@ -204,6 +267,16 @@ namespace JinToliq.Umvvm.ViewModel
         throw new InvalidPropertyName(name, GetType());
       if (!dictionary.Contains(name))
         throw new InvalidPropertyName(name, GetType());
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool IsStartsWithParentMarker(ReadOnlySpan<char> span) => !span.IsEmpty && span[0] == ParentContextMarker;
+
+    private string PathToString(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath)
+    {
+      return masterPath.IsEmpty
+        ? new string(name)
+        : $"{new string(masterPath)}.{new string(name)}";
     }
   }
 }

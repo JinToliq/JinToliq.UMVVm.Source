@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using JinToliq.Umvvm.ViewModel;
 using UnityEngine;
@@ -13,13 +13,13 @@ namespace JinToliq.Umvvm.View.Binding
     protected bool IsBound { get; private set; }
     protected string MasterPath { get; private set; }
 
-    public Property GetProperty(string property) => _view.GetProperty(property);
+    public Property GetProperty([NotNull] string property) => _view.GetProperty(property, MasterPath);
 
-    public TProperty GetProperty<TProperty>(string property) where TProperty : Property => _view.GetProperty<TProperty>(property);
+    public TProperty GetProperty<TProperty>([NotNull] string property) where TProperty : Property => _view.GetProperty<TProperty>(property, MasterPath);
 
-    public Command GetCommand(string property) => _view.GetCommand(property);
+    public Command GetCommand([NotNull] string property) => _view.GetCommand(property, MasterPath);
 
-    public TCommand GetCommand<TCommand>(string property) where TCommand : ICommand => _view.GetCommand<TCommand>(property);
+    public TCommand GetCommand<TCommand>([NotNull] string property) where TCommand : ICommand => _view.GetCommand<TCommand>(property, MasterPath);
 
     protected virtual void Bind() {}
 

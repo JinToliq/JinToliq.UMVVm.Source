@@ -1,12 +1,13 @@
-﻿using JinToliq.Umvvm.ViewModel;
+﻿using System.Diagnostics.CodeAnalysis;
+using JinToliq.Umvvm.ViewModel;
 
 namespace JinToliq.Umvvm.View
 {
   public interface IDataView
   {
-    Property GetProperty(string property);
-    TProperty GetProperty<TProperty>(string property) where TProperty : Property;
-    Command GetCommand(string property);
-    TCommand GetCommand<TCommand>(string property) where TCommand : ICommand;
+    Property GetProperty([NotNull] string property, string masterPath = null);
+    TProperty GetProperty<TProperty>([NotNull] string property, string masterPath = null) where TProperty : Property;
+    Command GetCommand([NotNull] string property, string masterPath = null);
+    TCommand GetCommand<TCommand>([NotNull] string property, string masterPath = null) where TCommand : ICommand;
   }
 }

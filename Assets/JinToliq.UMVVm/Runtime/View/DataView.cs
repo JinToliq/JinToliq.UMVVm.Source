@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using JinToliq.Umvvm.ViewModel;
 using UnityEngine;
 
@@ -15,13 +16,13 @@ namespace JinToliq.Umvvm.View
   {
     protected abstract Context BaseContext { get; }
 
-    public Property GetProperty(string property) => BaseContext.GetProperty(property);
+    public Property GetProperty([NotNull] string property, string masterPath = null) => BaseContext.GetProperty(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
 
-    public TProperty GetProperty<TProperty>(string property) where TProperty : Property => BaseContext.GetProperty<TProperty>(property);
+    public TProperty GetProperty<TProperty>([NotNull] string property, string masterPath = null) where TProperty : Property => BaseContext.GetProperty<TProperty>(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
 
-    public Command GetCommand(string property) => BaseContext.GetCommand(property);
+    public Command GetCommand([NotNull] string property, string masterPath = null) => BaseContext.GetCommand(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
 
-    public TCommand GetCommand<TCommand>(string property) where TCommand : ICommand => BaseContext.GetCommand<TCommand>(property);
+    public TCommand GetCommand<TCommand>([NotNull] string property, string masterPath = null) where TCommand : ICommand => BaseContext.GetCommand<TCommand>(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
 
     public void ClearState()
     {
