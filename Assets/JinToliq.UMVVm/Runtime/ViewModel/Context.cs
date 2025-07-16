@@ -39,13 +39,18 @@ namespace JinToliq.Umvvm.ViewModel
 
     public void SetStateObject(object state)
     {
+      if (CurrentState is not null && CurrentState is IInjectedContextState injectedState)
+        injectedState.Context = null;
+
       if (state is null)
         CurrentState = default;
 
-      if (state is TState typedState)
-        CurrentState = typedState;
-      else
+      if (state is not TState typedState)
         throw new ArgumentException($"State object is not of type {typeof(TState)}");
+
+      CurrentState = typedState;
+      if (CurrentState is IInjectedContextState injectedContextState)
+        injectedContextState.Context = this;
     }
 
     public object GetStateObject() => _currentState;

@@ -51,3 +51,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Fixed command path resolving
 ## [3.1.0] 2025-06-10
 ### Instantiating views from resources in inactive state
+## [3.2.0] 2025-07-16
+### Added ColorByBoolBinding, added support for flags in ConditionBinding, added IInjectedContextState interface to inject Context to its CurrentState upon setting

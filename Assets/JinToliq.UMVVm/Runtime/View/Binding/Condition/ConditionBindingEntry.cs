@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using JinToliq.Umvvm.ViewModel;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ namespace JinToliq.Umvvm.View.Binding.Condition
     Equals = 1,
     Greater = 2,
     Empty = 3,
+    HasFlag = 4,
   }
 
   [Serializable]
@@ -94,6 +96,7 @@ namespace JinToliq.Umvvm.View.Binding.Condition
         case ConditionType.Bool:
         case ConditionType.Equals:
         case ConditionType.Greater:
+        case ConditionType.HasFlag:
           return false;
         case ConditionType.Empty:
           return true;
@@ -102,54 +105,100 @@ namespace JinToliq.Umvvm.View.Binding.Condition
       }
     }
 
-    private bool EvaluateString(string value)
+    private bool EvaluateString(string propertyValue)
     {
       switch (_condition)
       {
         case ConditionType.Bool:
           return false;
         case ConditionType.Equals:
-          return string.Equals(value, _value, StringComparison.OrdinalIgnoreCase);
+          return string.Equals(propertyValue, _value, StringComparison.OrdinalIgnoreCase);
         case ConditionType.Greater:
           return false;
         case ConditionType.Empty:
-          return string.IsNullOrEmpty(value);
+          return string.IsNullOrEmpty(propertyValue);
+        case ConditionType.HasFlag:
+          throw new ArgumentOutOfRangeException(nameof(_condition), _condition, "HasFlag condition is not applicable for string evaluation");
         default:
           throw new ArgumentOutOfRangeException();
       }
     }
 
-    private bool EvaluateNumber(long value)
+    private bool EvaluateNumber(long propertyValue)
     {
       switch (_condition)
       {
         case ConditionType.Bool:
-          return value > 0;
+          return propertyValue > 0;
         case ConditionType.Equals:
-          return value == long.Parse(_value);
+          return propertyValue == long.Parse(_value);
         case ConditionType.Greater:
-          return value > long.Parse(_value);
+          return propertyValue > long.Parse(_value);
         case ConditionType.Empty:
           return false;
+        case ConditionType.HasFlag:
+          throw new ArgumentOutOfRangeException(nameof(_condition), _condition, "HasFlag condition is not applicable for long evaluation");
         default:
           throw new ArgumentOutOfRangeException();
       }
     }
 
-    private bool EvaluateNumber(double value)
+    private bool EvaluateNumber(double propertyValue)
     {
       switch (_condition)
       {
         case ConditionType.Bool:
-          return value > 0;
+          return propertyValue > 0;
         case ConditionType.Equals:
-          return Math.Abs(value - double.Parse(_value)) < double.Epsilon;
+          return Math.Abs(propertyValue - double.Parse(_value)) < double.Epsilon;
         case ConditionType.Greater:
-          return value > double.Parse(_value);
+          return propertyValue > double.Parse(_value);
         case ConditionType.Empty:
           return false;
+        case ConditionType.HasFlag:
+          throw new ArgumentOutOfRangeException(nameof(_condition), _condition, "HasFlag condition is not applicable for number evaluation");
         default:
           throw new ArgumentOutOfRangeException();
+      }
+    }
+
+    private bool EvaluateEnum(Enum propertyValue)
+    {
+      var inputValueIsLong = long.TryParse(_value, out var inputLongValue);
+      var type = _property.GetDataType();
+      object inputValueAsEnum;
+
+      switch (_condition)
+      {
+        case ConditionType.Bool:
+        case ConditionType.Equals:
+          if (inputValueIsLong)
+            return inputLongValue == Convert.ToInt64(propertyValue);
+
+          return string.Equals(_value, propertyValue.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        case ConditionType.Greater:
+          if (inputValueIsLong)
+            return inputLongValue > Convert.ToInt64(propertyValue);
+
+          if (!Enum.TryParse(type, _value, true, out inputValueAsEnum))
+            throw new ArgumentOutOfRangeException(nameof(_value), _value, $"Value: {_value} is not defined in the enum type: {type.Name}");
+
+          return Convert.ToInt64(propertyValue) > Convert.ToInt64(inputValueAsEnum);
+
+        case ConditionType.HasFlag:
+          if (inputValueIsLong)
+            return (Convert.ToInt64(propertyValue) & inputLongValue) == inputLongValue;
+
+          if (!Enum.TryParse(type, _value, true, out inputValueAsEnum))
+            throw new ArgumentOutOfRangeException(nameof(_value), _value, $"Value: {_value} is not defined in the enum type: {type.Name}");
+
+          var inputValueAsLong = Convert.ToInt64(inputValueAsEnum);
+          return (Convert.ToInt64(propertyValue) & inputValueAsLong) == inputValueAsLong;
+
+        case ConditionType.Empty:
+        default:
+          throw new ArgumentOutOfRangeException(nameof(_condition), _condition, "Unhandled condition type for enum evaluation");
       }
     }
   }
