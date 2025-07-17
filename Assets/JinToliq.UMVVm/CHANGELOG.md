@@ -57,3 +57,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Fixed IInjectedContextState interface
 ## [3.2.2] 2025-07-17
 ### Improvement for IInjectedContextState interface
+## [3.2.3] 2025-07-17
+### Fixed ConditionBinding Enum evaluation

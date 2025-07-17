@@ -78,12 +78,7 @@ namespace JinToliq.Umvvm.View.Binding.Condition
         case double doubleValue:
           return EvaluateNumber(doubleValue);
         case Enum enumValue:
-        {
-          if (long.TryParse(_value, out var longValue))
-            return longValue == Convert.ToInt64(enumValue);
-
-          return string.Equals(_value, enumValue.ToString(), StringComparison.OrdinalIgnoreCase);
-        }
+          return EvaluateEnum(enumValue);
         default:
           throw new ArgumentOutOfRangeException(nameof(input), _property.GetDataType().Name, "Unhandled property value type");
       }
