@@ -23,7 +23,13 @@ namespace JinToliq.Umvvm.ViewModel
     object GetStateObject();
   }
 
-  public abstract class Context<TState> : Context, IContextWithState
+  public interface IContextWithState<TState> : IContextWithState
+  {
+    TState CurrentState { get; set; }
+    void Set(TState state);
+  }
+
+  public abstract class Context<TState> : Context, IContextWithState<TState>
   {
     private TState _currentState;
 
@@ -35,6 +41,16 @@ namespace JinToliq.Umvvm.ViewModel
         _currentState = value;
         OnStateChanged();
       }
+    }
+
+    public void Set(TState state)
+    {
+      if (CurrentState is not null && CurrentState is IInjectedContextState injectedState)
+        injectedState.Context = null;
+
+      CurrentState = state;
+      if (CurrentState is not null && CurrentState is IInjectedContextState injectedContextState)
+        injectedContextState.Context = this;
     }
 
     public void SetStateObject(object state)
