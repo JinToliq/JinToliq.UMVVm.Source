@@ -46,17 +46,17 @@ namespace JinToliq.Umvvm.ViewModel
     public void Set(TState state)
     {
       if (CurrentState is not null && CurrentState is IInjectedContextState injectedState)
-        injectedState.Context = null;
+        injectedState.SetBaseContext(null);
 
       CurrentState = state;
       if (CurrentState is not null && CurrentState is IInjectedContextState injectedContextState)
-        injectedContextState.Context = this;
+        injectedContextState.SetBaseContext(this);
     }
 
     public void SetStateObject(object state)
     {
       if (CurrentState is not null && CurrentState is IInjectedContextState injectedState)
-        injectedState.Context = null;
+        injectedState.SetBaseContext(null);
 
       if (state is null)
         CurrentState = default;
@@ -66,7 +66,7 @@ namespace JinToliq.Umvvm.ViewModel
 
       CurrentState = typedState;
       if (CurrentState is IInjectedContextState injectedContextState)
-        injectedContextState.Context = this;
+        injectedContextState.SetBaseContext(this);
     }
 
     public object GetStateObject() => _currentState;

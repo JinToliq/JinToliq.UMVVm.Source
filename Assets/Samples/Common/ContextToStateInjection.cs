@@ -7,9 +7,9 @@ namespace Samples.Common
 {
   public class SampleChildContext : Context<SampleChildContext.State>
   {
-    public class State : IInjectedContextState
+    public class State : IInjectedContextState<SampleChildContext>
     {
-      public IContextWithState Context { get; set; }
+      public SampleChildContext Context { get; set; }
     }
   }
 
