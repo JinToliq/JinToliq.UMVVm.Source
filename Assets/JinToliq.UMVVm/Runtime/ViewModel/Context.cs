@@ -6,7 +6,7 @@ using JinToliq.Umvvm.ViewModel.Exceptions;
 
 namespace JinToliq.Umvvm.ViewModel
 {
-  public interface IContext
+  public interface IContext : IDisposable
   {
     void SetParent(IContext parent);
     Property GetProperty(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath);
@@ -187,10 +187,37 @@ namespace JinToliq.Umvvm.ViewModel
 
     public virtual void Update() {}
 
+    public virtual void Dispose()
+    {
+      if (_commands is not null)
+      {
+        foreach (var command in _commands.Values)
+          command.Dispose();
+      }
+
+      if (_properties is not null)
+      {
+        foreach (var property in _properties.Values)
+          property.Dispose();
+      }
+
+      if (_contexts is not null)
+      {
+        foreach (var context in _contexts.Values)
+          context.Dispose();
+      }
+    }
+
     protected void RegisterProperty(Property property)
     {
-      _properties ??= new Dictionary<string, Property>();
+      _properties ??= new();
       _properties.Add(property.Name, property);
+    }
+
+    protected void RegisterProperty(ProperyBatch propertyBatch)
+    {
+      foreach (var property in propertyBatch.Properties)
+        RegisterProperty(property);
     }
 
     protected void RegisterProperties(params Property[] properties)
@@ -201,19 +228,19 @@ namespace JinToliq.Umvvm.ViewModel
 
     protected void RegisterCommand(string name, Action action)
     {
-      _commands ??= new Dictionary<string, ICommand>();
+      _commands ??= new();
       _commands.Add(name, new Command(action));
     }
 
     protected void RegisterCommand<TArg>(string name, Action<TArg> action)
     {
-      _commands ??= new Dictionary<string, ICommand>();
+      _commands ??= new();
       _commands.Add(name, new Command<TArg>(action));
     }
 
     protected void RegisterContext(string name, IContext context)
     {
-      _contexts ??= new Dictionary<string, IContext>();
+      _contexts ??= new();
       _contexts.Add(name, context);
       context.SetParent(this);
     }

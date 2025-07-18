@@ -155,6 +155,12 @@ namespace JinToliq.Umvvm.ViewModel.Properties
       }
     }
 
+    public override void Dispose()
+    {
+      base.Dispose();
+      Value = null;
+    }
+
     private bool IsEqualElements(TElement a, TElement b)
     {
       if (ReferenceEquals(a, b))

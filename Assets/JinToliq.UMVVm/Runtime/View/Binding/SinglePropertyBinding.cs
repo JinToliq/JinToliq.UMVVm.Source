@@ -49,7 +49,7 @@ namespace JinToliq.Umvvm.View.Binding
       Property = null;
     }
 
-    protected abstract void OnBeforeChange(Property property);
+    protected virtual void OnBeforeChange(Property property) { }
 
     protected abstract void OnChanged(Property property);
 
@@ -91,7 +91,7 @@ namespace JinToliq.Umvvm.View.Binding
       Property = null;
     }
 
-    protected abstract void OnBeforeChange(Property<TValue> property);
+    protected virtual void OnBeforeChange(Property<TValue> property) { }
 
     protected abstract void OnChanged(Property<TValue> property);
 

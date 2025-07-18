@@ -59,3 +59,8 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Improvement for IInjectedContextState interface
 ## [3.2.3] 2025-07-17
 ### Fixed ConditionBinding Enum evaluation
+## [3.3.0] 2025-07-18
+### Changes:
+ - Added PropertyBatch to aggregate several properties into a group
+ - Added PagedCollectionViewBinding and PagedCollectionProperty PropertyBatch
+ - Added SingleNumberPropertyBinding to bind to any property type that can be converted or parsed to a double value

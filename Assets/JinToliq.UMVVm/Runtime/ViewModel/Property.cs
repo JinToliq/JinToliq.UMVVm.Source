@@ -3,7 +3,7 @@ using JinToliq.Umvvm.ViewModel.Exceptions;
 
 namespace JinToliq.Umvvm.ViewModel
 {
-  public abstract class Property
+  public abstract class Property : IDisposable
   {
     public event Action<Property> BeforeChange;
     public event Action<Property> Changed;
@@ -33,6 +33,12 @@ namespace JinToliq.Umvvm.ViewModel
     public abstract object GetValue();
 
     public abstract Type GetDataType();
+
+    public virtual void Dispose()
+    {
+      BeforeChange = null;
+      Changed = null;
+    }
 
     protected virtual void InvokeBeforeChange() => BeforeChange?.Invoke(this);
 
@@ -91,6 +97,13 @@ namespace JinToliq.Umvvm.ViewModel
         return null;
 
       return Value as string ?? Value.ToString();
+    }
+
+    public override void Dispose()
+    {
+      base.Dispose();
+      BeforeChange = null;
+      Changed = null;
     }
   }
 }

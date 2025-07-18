@@ -1,16 +1,20 @@
-using JinToliq.Umvvm.ViewModel;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace JinToliq.Umvvm.View.Binding.Specific
 {
-  public class ImageFillBinding : SinglePropertyBinding<float>
+  public class ImageFillBinding : SingleNumberPropertyBinding
   {
     [SerializeField] private Image _image;
+    [SerializeField] private bool _invert;
 
-    protected override void OnBeforeChange(Property<float> property) { }
+    protected override void OnChanged(double value)
+    {
+      if (_invert)
+        value = 1f - value;
 
-    protected override void OnChanged(Property<float> property) => _image.fillAmount = property.Value;
+      _image.fillAmount = (float)value;
+    }
 
     private void Reset() => _image = GetComponent<Image>();
   }

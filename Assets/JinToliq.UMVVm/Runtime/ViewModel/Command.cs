@@ -3,14 +3,14 @@ using JinToliq.Umvvm.ViewModel.Exceptions;
 
 namespace JinToliq.Umvvm.ViewModel
 {
-  public interface ICommand
+  public interface ICommand : IDisposable
   {
     TCommand As<TCommand>() where TCommand : ICommand;
   }
 
   public class Command : ICommand
   {
-    private readonly Action _action;
+    private Action _action;
 
     public Command(Action action) => _action = action ?? throw new ArgumentNullException(nameof(action));
 
@@ -23,11 +23,19 @@ namespace JinToliq.Umvvm.ViewModel
     }
 
     public void Invoke() => _action();
+
+    public void Dispose()
+    {
+      if (_action is null)
+        throw new ObjectDisposedException("Command is already disposed");
+
+      _action = null;
+    }
   }
 
   public class Command<TArg> : ICommand
   {
-    private readonly Action<TArg> _action;
+    private Action<TArg> _action;
 
     public Command(Action<TArg> action) => _action = action ?? throw new ArgumentNullException(nameof(action));
 
@@ -39,9 +47,15 @@ namespace JinToliq.Umvvm.ViewModel
       throw new InvalidCommandTypeException();
     }
 
-    public void Invoke(TArg arg)
-    {
+    public void Invoke(TArg arg) =>
       _action(arg);
+
+    public void Dispose()
+    {
+      if (_action is null)
+        throw new ObjectDisposedException("Command is already disposed");
+
+      _action = null;
     }
   }
 }

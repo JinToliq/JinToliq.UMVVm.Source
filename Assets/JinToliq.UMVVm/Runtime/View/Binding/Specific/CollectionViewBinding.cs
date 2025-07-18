@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using JinToliq.Umvvm.ViewModel;
 using UnityEngine;
 
@@ -11,6 +12,11 @@ namespace JinToliq.Umvvm.View.Binding.Specific
     [SerializeField] private Transform _parent;
     [SerializeField] private bool _clearChildrenOnAwake = true;
     private readonly List<DataView> _instances = new();
+
+    private readonly List<object> _collection = new();
+
+    protected IReadOnlyList<object> Collection => _collection;
+    protected virtual IEnumerable<object> ValidCollection => Collection;
 
     protected override void OnAwakened()
     {
@@ -28,6 +34,8 @@ namespace JinToliq.Umvvm.View.Binding.Specific
 
     protected override void OnChanged(Property property)
     {
+      _collection.Clear();
+
       var value = property.GetValue();
       if (value is not IList collection || collection.Count == 0)
       {
@@ -38,7 +46,15 @@ namespace JinToliq.Umvvm.View.Binding.Specific
         return;
       }
 
-      var newCount = collection.Count;
+      foreach (var instance in collection)
+        _collection.Add(instance);
+
+      OnCollectionUpdated();
+
+      var newCollection = ValidCollection;
+      var newCollectionArray = newCollection as object[] ?? newCollection.ToArray();
+
+      var newCount = newCollectionArray.Length;
       var oldCount = _instances.Count;
 
       if (newCount < oldCount)
@@ -62,16 +78,12 @@ namespace JinToliq.Umvvm.View.Binding.Specific
       }
 
       for (var i = 0; i < newCount; i++)
-      {
-        var state = collection[i];
-        var instance = _instances[i];
-        instance.SetState(state);
-      }
+        _instances[i].SetState(newCollectionArray[i]);
     }
 
-    private void Reset()
-    {
+    protected virtual void OnCollectionUpdated() { }
+
+    private void Reset() =>
       _parent = transform;
-    }
   }
 }
