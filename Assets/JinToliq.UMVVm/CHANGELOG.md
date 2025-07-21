@@ -66,3 +66,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
  - Added SingleNumberPropertyBinding to bind to any property type that can be converted or parsed to a double value
 ## [3.3.1] 2025-07-21
 ### Fixed BaseBinding exception when disabling binding in unbound state when it is not marked with AlwaysActiveForChange
+## [3.3.2] 2025-07-21
+### Added ActivityIsManagedByParent flag for IContext

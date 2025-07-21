@@ -8,6 +8,7 @@ namespace JinToliq.Umvvm.ViewModel
 {
   public interface IContext : IDisposable
   {
+    bool ActivityIsManagedByParent { get; }
     void SetParent(IContext parent);
     Property GetProperty(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath);
     TProperty GetProperty<TProperty>(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath) where TProperty : Property;
@@ -83,6 +84,8 @@ namespace JinToliq.Umvvm.ViewModel
     private Dictionary<string, Property> _properties;
     private Dictionary<string, ICommand> _commands;
     private Dictionary<string, IContext> _contexts;
+
+    public virtual bool ActivityIsManagedByParent => true;
 
     public void SetParent(IContext parent) => _parent = parent;
 
@@ -167,7 +170,10 @@ namespace JinToliq.Umvvm.ViewModel
         return;
 
       foreach (var context in _contexts)
-        context.Value.Enable();
+      {
+        if (context.Value.ActivityIsManagedByParent)
+          context.Value.Enable();
+      }
     }
 
     public void Disable()
@@ -178,7 +184,10 @@ namespace JinToliq.Umvvm.ViewModel
         return;
 
       foreach (var context in _contexts)
-        context.Value.Disable();
+      {
+        if (context.Value.ActivityIsManagedByParent)
+          context.Value.Disable();
+      }
     }
 
     protected virtual void OnEnabled() {}
