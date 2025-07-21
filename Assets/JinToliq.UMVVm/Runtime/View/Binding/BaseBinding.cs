@@ -31,7 +31,7 @@ namespace JinToliq.Umvvm.View.Binding
 
     protected virtual void OnEnabled() {}
 
-    protected virtual void OnDisabled() {}
+    protected virtual void OnDisabled(bool wasBound) {}
 
     private void Awake()
     {
@@ -54,13 +54,14 @@ namespace JinToliq.Umvvm.View.Binding
 
     private void OnDisable()
     {
-      if (!AlwaysActiveForChange)
+      var wasBound = IsBound;
+      if (!AlwaysActiveForChange && wasBound)
       {
         Unbind();
         IsBound = false;
       }
 
-      OnDisabled();
+      OnDisabled(wasBound);
     }
 
     private void OnDestroy()
