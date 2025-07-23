@@ -37,7 +37,7 @@ namespace JinToliq.Umvvm.View.Binding.Specific
       _collection.Clear();
 
       var value = property.GetValue();
-      if (value is not IList collection || collection.Count == 0)
+      if (value is not ICollection collection || collection.Count == 0)
       {
         foreach (var instance in _instances)
           OnScenePool.Instance.Recycle(instance);
@@ -52,9 +52,9 @@ namespace JinToliq.Umvvm.View.Binding.Specific
       OnCollectionUpdated();
 
       var newCollection = ValidCollection;
-      var newCollectionArray = newCollection as object[] ?? newCollection.ToArray();
+      var newCollectionList = newCollection as IList ?? newCollection.ToArray();
 
-      var newCount = newCollectionArray.Length;
+      var newCount = newCollectionList.Count;
       var oldCount = _instances.Count;
 
       if (newCount < oldCount)
@@ -72,13 +72,19 @@ namespace JinToliq.Umvvm.View.Binding.Specific
         for (var i = oldCount; i < newCount; i++)
         {
           var instance = OnScenePool.Instance.Get<DataView>(_prefab, _parent);
+          if (instance == null)
+          {
+            Debug.LogError($"Failed to instantiate prefab {_prefab.name} or find root component of type {typeof(DataView)} when instantiating views for collection binding");
+            continue;
+          }
+
           instance.gameObject.SetActive(true);
           _instances.Add(instance);
         }
       }
 
       for (var i = 0; i < newCount; i++)
-        _instances[i].SetState(newCollectionArray[i]);
+        _instances[i].SetState(newCollectionList[i]);
     }
 
     protected virtual void OnCollectionUpdated() { }

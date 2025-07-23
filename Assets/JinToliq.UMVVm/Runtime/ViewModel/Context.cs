@@ -8,7 +8,7 @@ namespace JinToliq.Umvvm.ViewModel
 {
   public interface IContext : IDisposable
   {
-    bool ActivityIsManagedByParent { get; }
+    bool LifecycleIsManagedByParent { get; }
     void SetParent(IContext parent);
     Property GetProperty(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath);
     TProperty GetProperty<TProperty>(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath) where TProperty : Property;
@@ -16,6 +16,12 @@ namespace JinToliq.Umvvm.ViewModel
     TCommand GetCommand<TCommand>(ReadOnlySpan<char> name, ReadOnlySpan<char> masterPath) where TCommand : ICommand;
     void Enable();
     void Disable();
+  }
+
+  public interface IContextUpdatable : IContext
+  {
+    public void Update();
+    public void UpdateChildren();
   }
 
   public interface IContextWithState : IContext
@@ -85,7 +91,7 @@ namespace JinToliq.Umvvm.ViewModel
     private Dictionary<string, ICommand> _commands;
     private Dictionary<string, IContext> _contexts;
 
-    public virtual bool ActivityIsManagedByParent => true;
+    public virtual bool LifecycleIsManagedByParent => true;
 
     public void SetParent(IContext parent) => _parent = parent;
 
@@ -171,7 +177,7 @@ namespace JinToliq.Umvvm.ViewModel
 
       foreach (var context in _contexts)
       {
-        if (context.Value.ActivityIsManagedByParent)
+        if (context.Value.LifecycleIsManagedByParent)
           context.Value.Enable();
       }
     }
@@ -185,16 +191,29 @@ namespace JinToliq.Umvvm.ViewModel
 
       foreach (var context in _contexts)
       {
-        if (context.Value.ActivityIsManagedByParent)
+        if (context.Value.LifecycleIsManagedByParent)
           context.Value.Disable();
+      }
+    }
+
+    public void UpdateChildren()
+    {
+      if (_contexts is null)
+        return;
+
+      foreach (var context in _contexts)
+      {
+        if (context.Value.LifecycleIsManagedByParent && context.Value is IContextUpdatable updatable)
+        {
+          updatable.UpdateChildren();
+          updatable.Update();
+        }
       }
     }
 
     protected virtual void OnEnabled() {}
 
     protected virtual void OnDisabled() {}
-
-    public virtual void Update() {}
 
     public virtual void Dispose()
     {

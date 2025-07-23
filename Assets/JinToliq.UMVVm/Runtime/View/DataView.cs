@@ -1,47 +1,48 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using JinToliq.Umvvm.View.Lifecycle;
 using JinToliq.Umvvm.ViewModel;
 using UnityEngine;
 
 namespace JinToliq.Umvvm.View
 {
-  public abstract class DataView<TContext> : DataView where TContext : Context, new()
+  public interface IDataView<TContext> : IDataView where TContext : Context, new()
   {
-    protected TContext Context { get; set; }
+    public TContext TargetContext { get; }
 
-    protected sealed override Context BaseContext => Context ??= new TContext();
+    Context IDataView.Context => Context;
   }
 
   public abstract class DataView : MonoBehaviour, IDataView
   {
-    protected abstract Context BaseContext { get; }
+    public abstract Context Context { get; }
 
-    public Property GetProperty([NotNull] string property, string masterPath = null) => BaseContext.GetProperty(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
+    public Property GetProperty([NotNull] string property, string masterPath = null) => Context.GetProperty(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
 
-    public TProperty GetProperty<TProperty>([NotNull] string property, string masterPath = null) where TProperty : Property => BaseContext.GetProperty<TProperty>(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
+    public TProperty GetProperty<TProperty>([NotNull] string property, string masterPath = null) where TProperty : Property => Context.GetProperty<TProperty>(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
 
-    public Command GetCommand([NotNull] string property, string masterPath = null) => BaseContext.GetCommand(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
+    public Command GetCommand([NotNull] string property, string masterPath = null) => Context.GetCommand(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
 
-    public TCommand GetCommand<TCommand>([NotNull] string property, string masterPath = null) where TCommand : ICommand => BaseContext.GetCommand<TCommand>(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
+    public TCommand GetCommand<TCommand>([NotNull] string property, string masterPath = null) where TCommand : ICommand => Context.GetCommand<TCommand>(property, masterPath is null ? ReadOnlySpan<char>.Empty : masterPath.AsSpan());
 
     public void ClearState()
     {
-      if (BaseContext is IContextWithState contextWithState)
+      if (Context is IContextWithState contextWithState)
         contextWithState.SetStateObject(null);
     }
 
     public void TrySetState(object state)
     {
-      if (BaseContext is IContextWithState contextWithState)
+      if (Context is IContextWithState contextWithState)
         contextWithState.SetStateObject(state);
     }
 
     public void SetState<TState>(TState state)
     {
-      if (BaseContext is IContextWithState contextWithState)
+      if (Context is IContextWithState contextWithState)
         contextWithState.SetStateObject(state);
       else
-        throw new ArgumentException($"Context {BaseContext!.GetType()} does not support states");
+        throw new ArgumentException($"Context {Context!.GetType()} does not support states");
     }
 
     protected virtual void OnEnabled() {}
@@ -50,16 +51,42 @@ namespace JinToliq.Umvvm.View
 
     private void OnEnable()
     {
-      BaseContext!.Enable();
+      Context!.Enable();
       OnEnabled();
     }
 
     private void OnDisable()
     {
-      BaseContext.Disable();
+      Context.Disable();
       OnDisabled();
     }
+  }
 
-    private void Update() => BaseContext.Update();
+
+  public abstract class DataView<TContext> : DataView, IDataView<TContext>
+    where TContext : Context, new()
+  {
+    public TContext TargetContext { get; private set; }
+
+    public sealed override Context Context => TargetContext ??= new();
+
+    protected virtual void OnAwake() {}
+
+    private void Awake()
+    {
+      if (Application.isPlaying)
+      {
+        var contextType = typeof(TContext);
+        if (contextType.IsSubclassOf(typeof(IContextUpdatable)))
+        {
+          if (!gameObject.TryGetComponent<DataViewUpdatable>(out var dataViewUpdatable))
+            dataViewUpdatable = gameObject.AddComponent<DataViewUpdatable>();
+
+          dataViewUpdatable.Initialize(this);
+        }
+      }
+
+      OnAwake();
+    }
   }
 }

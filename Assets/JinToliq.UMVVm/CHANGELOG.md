@@ -68,3 +68,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Fixed BaseBinding exception when disabling binding in unbound state when it is not marked with AlwaysActiveForChange
 ## [3.3.2] 2025-07-21
 ### Added ActivityIsManagedByParent flag for IContext
+## [4.0.0] 2025-07-23
+### Removed DataView.Update method. Now updates will be called only if Context is implementing IContextUpdatable interface. This will trigger the lifecycle controlling component to be added by DataView
