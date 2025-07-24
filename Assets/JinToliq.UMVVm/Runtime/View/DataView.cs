@@ -77,7 +77,7 @@ namespace JinToliq.Umvvm.View
       if (Application.isPlaying)
       {
         var contextType = typeof(TContext);
-        if (contextType.IsSubclassOf(typeof(IContextUpdatable)))
+        if (typeof(IContextUpdatable).IsAssignableFrom(contextType))
         {
           if (!gameObject.TryGetComponent<DataViewUpdatable>(out var dataViewUpdatable))
             dataViewUpdatable = gameObject.AddComponent<DataViewUpdatable>();
