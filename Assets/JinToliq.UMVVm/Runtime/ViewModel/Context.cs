@@ -45,27 +45,22 @@ namespace JinToliq.Umvvm.ViewModel
       get => _currentState;
       set
       {
+        if (_currentState is not null && _currentState is IInjectedContextState previous)
+          previous.SetBaseContext(null);
+
+        if (value is not null && value is IInjectedContextState updated)
+          updated.SetBaseContext(this);
+
         _currentState = value;
         OnStateChanged();
       }
     }
 
-    public void Set(TState state)
-    {
-      if (CurrentState is not null && CurrentState is IInjectedContextState injectedState)
-        injectedState.SetBaseContext(null);
-
-      if (state is not null && state is IInjectedContextState injectedContextState)
-        injectedContextState.SetBaseContext(this);
-
+    public void Set(TState state) =>
       CurrentState = state;
-    }
 
     public void SetStateObject(object state)
     {
-      if (CurrentState is not null && CurrentState is IInjectedContextState injectedState)
-        injectedState.SetBaseContext(null);
-
       if (state is null)
         CurrentState = default;
 
@@ -73,8 +68,6 @@ namespace JinToliq.Umvvm.ViewModel
         throw new ArgumentException($"State object is not of type {typeof(TState)}");
 
       CurrentState = typedState;
-      if (CurrentState is IInjectedContextState injectedContextState)
-        injectedContextState.SetBaseContext(this);
     }
 
     public object GetStateObject() => _currentState;

@@ -74,3 +74,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Fixed Context type validation in DataView
 ## [4.0.2] 2025-07-25
 ### Injecting context before CurrentState is set
+## [4.0.3] 2025-07-25
+### Injecting context before CurrentState is set in all scenarios
