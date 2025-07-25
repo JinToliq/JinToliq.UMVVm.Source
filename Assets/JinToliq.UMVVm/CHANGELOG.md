@@ -72,3 +72,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Removed DataView.Update method. Now updates will be called only if Context is implementing IContextUpdatable interface. This will trigger the lifecycle controlling component to be added by DataView
 ## [4.0.1] 2025-07-24
 ### Fixed Context type validation in DataView
+## [4.0.2] 2025-07-25
+### Injecting context before CurrentState is set

@@ -55,9 +55,10 @@ namespace JinToliq.Umvvm.ViewModel
       if (CurrentState is not null && CurrentState is IInjectedContextState injectedState)
         injectedState.SetBaseContext(null);
 
-      CurrentState = state;
-      if (CurrentState is not null && CurrentState is IInjectedContextState injectedContextState)
+      if (state is not null && state is IInjectedContextState injectedContextState)
         injectedContextState.SetBaseContext(this);
+
+      CurrentState = state;
     }
 
     public void SetStateObject(object state)
