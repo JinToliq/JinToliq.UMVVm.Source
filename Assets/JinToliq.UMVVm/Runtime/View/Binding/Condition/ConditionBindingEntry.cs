@@ -81,7 +81,7 @@ namespace JinToliq.Umvvm.View.Binding.Condition
 
     protected void OnChanged(Property property)
     {
-      var input = _property.GetValue();
+      var input = property.GetValue();
       var direct = EvaluateDirect(input);
       LastResult = _invert ? !direct : direct;
     }
