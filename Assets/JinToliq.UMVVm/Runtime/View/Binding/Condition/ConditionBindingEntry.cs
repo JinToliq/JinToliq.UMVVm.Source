@@ -24,8 +24,20 @@ namespace JinToliq.Umvvm.View.Binding.Condition
 
     private ConditionBinding _parent;
     private Property _property;
+    private bool _lastResult;
 
-    public bool LastResult { get; private set; }
+    public bool LastResult
+    {
+      get => _lastResult;
+      private set
+      {
+        if (_lastResult == value)
+          return;
+
+        _lastResult = value;
+        _parent.OnEntryChanged(this);
+      }
+    }
 
     public void SetParent(ConditionBinding parent) =>
       _parent = parent ?? throw new ArgumentNullException(nameof(parent), "Parent cannot be null");
@@ -42,11 +54,11 @@ namespace JinToliq.Umvvm.View.Binding.Condition
       _property = null;
     }
 
-    public bool Evaluate()
+    public bool ForceEvaluate()
     {
       var input = _property.GetValue();
       var direct = EvaluateDirect(input);
-      LastResult = _invert ? !direct : direct;
+      _lastResult = _invert ? !direct : direct;
       return LastResult;
     }
 
@@ -69,10 +81,9 @@ namespace JinToliq.Umvvm.View.Binding.Condition
 
     protected void OnChanged(Property property)
     {
-      var lastResult = LastResult;
-      Evaluate();
-      if (lastResult != LastResult)
-        _parent.OnEntryChanged(this);
+      var input = _property.GetValue();
+      var direct = EvaluateDirect(input);
+      LastResult = _invert ? !direct : direct;
     }
 
     private bool EvaluateDirect(object input)

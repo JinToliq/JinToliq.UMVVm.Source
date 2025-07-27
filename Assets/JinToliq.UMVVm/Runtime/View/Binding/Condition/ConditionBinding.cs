@@ -101,15 +101,15 @@ namespace JinToliq.Umvvm.View.Binding.Condition
       if (_condition is null || _condition.Length < 1)
         throw new("Conditions not set");
 
-      var result = _condition[0].Evaluate();
+      var result = _condition[0].ForceEvaluate();
       if (_condition.Length > 1)
       {
         for (var i = 1; i < _condition.Length; i++)
         {
           result = _relation switch
           {
-            Relation.And => result && _condition[i].Evaluate(),
-            Relation.Or => result || _condition[i].Evaluate(),
+            Relation.And => result && _condition[i].ForceEvaluate(),
+            Relation.Or => result || _condition[i].ForceEvaluate(),
             _ => throw new ArgumentOutOfRangeException(nameof(_relation), _relation, "Unknown relation type"),
           };
         }
