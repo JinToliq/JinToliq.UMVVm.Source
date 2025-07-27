@@ -15,20 +15,24 @@ namespace JinToliq.Umvvm.View.Binding.Condition
   }
 
   [Serializable]
-  public class ConditionBindingEntry
+  internal class ConditionBindingEntry
   {
-    public event Action Changed;
-
     [SerializeField] private string _path;
     [SerializeField] private ConditionType _condition;
     [SerializeField] private string _value;
     [SerializeField] private bool _invert;
 
+    private ConditionBinding _parent;
     private Property _property;
 
-    public void Bind(BaseBinding binding)
+    public bool LastResult { get; private set; }
+
+    public void SetParent(ConditionBinding parent) =>
+      _parent = parent ?? throw new ArgumentNullException(nameof(parent), "Parent cannot be null");
+
+    public void Bind()
     {
-      _property = binding.GetProperty(_path);
+      _property = _parent.GetProperty(_path);
       _property.Changed += OnChanged;
     }
 
@@ -42,15 +46,34 @@ namespace JinToliq.Umvvm.View.Binding.Condition
     {
       var input = _property.GetValue();
       var direct = EvaluateDirect(input);
-      return _invert
-        ? !direct
-        : direct;
+      LastResult = _invert ? !direct : direct;
+      return LastResult;
     }
 
-    public string ToInspectString() => _property is null ? "" : $"{_path}: {_property.GetValue()?.ToString() ?? "null"}";
+    public string ToInspectString()
+    {
+      var sb = new System.Text.StringBuilder();
+      if (_property is null)
+      {
+        sb.Append("Property is not set");
+      }
+      else
+      {
+        sb.Append('[').Append(_path).Append(']').Append(": ");
+        sb.Append("cached: ").Append(LastResult).Append("; ");
+        sb.Append("evaluated: ").Append(_property.GetValue()?.ToString() ?? "null");
+      }
 
-    protected void OnChanged(Property property) =>
-      Changed!.Invoke();
+      return sb.ToString();
+    }
+
+    protected void OnChanged(Property property)
+    {
+      var lastResult = LastResult;
+      Evaluate();
+      if (lastResult != LastResult)
+        _parent.OnEntryChanged(this);
+    }
 
     private bool EvaluateDirect(object input)
     {

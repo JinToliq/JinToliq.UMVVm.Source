@@ -36,38 +36,67 @@ namespace JinToliq.Umvvm.View.Binding.Condition
     [SerializeField] private Relation _relation;
     [SerializeField] private ConditionBindingEntry[] _condition;
 
-    public IReadOnlyList<ConditionBindingEntry> Conditions => _condition;
+    internal IReadOnlyList<ConditionBindingEntry> Conditions => _condition;
+
+    internal void OnEntryChanged(ConditionBindingEntry entry) =>
+      EvaluateFromCached();
+
+    protected override void OnAwakened()
+    {
+      base.OnAwakened();
+      if (_condition is null || _condition.Length <= 0)
+        return;
+
+      foreach (var condition in _condition)
+        condition.SetParent(this);
+    }
 
     protected override void Bind()
     {
       foreach (var item in _condition)
-      {
-        item.Changed += Evaluate;
-        item.Bind(this);
-      }
+        item.Bind();
     }
 
     protected override void OnBound()
     {
       base.OnBound();
-      Evaluate();
+      ForceEvaluate();
     }
 
     protected override void OnEnabled() =>
-      Evaluate();
+      ForceEvaluate();
 
     protected override void Unbind()
     {
       foreach (var item in _condition)
-      {
         item.Unbind();
-        item.Changed -= Evaluate;
-      }
     }
 
     protected abstract void OnEvaluated(bool result);
 
-    private void Evaluate()
+    private void EvaluateFromCached()
+    {
+      if (_condition is null || _condition.Length < 1)
+        throw new("Conditions not set");
+
+      var result = _condition[0].LastResult;
+      if (_condition.Length > 1)
+      {
+        for (var i = 1; i < _condition.Length; i++)
+        {
+          result = _relation switch
+          {
+            Relation.And => result && _condition[i].LastResult,
+            Relation.Or => result || _condition[i].LastResult,
+            _ => throw new ArgumentOutOfRangeException(nameof(_relation), _relation, "Unknown relation type"),
+          };
+        }
+      }
+
+      OnEvaluated(result);
+    }
+
+    private void ForceEvaluate()
     {
       if (_condition is null || _condition.Length < 1)
         throw new("Conditions not set");
@@ -81,7 +110,7 @@ namespace JinToliq.Umvvm.View.Binding.Condition
           {
             Relation.And => result && _condition[i].Evaluate(),
             Relation.Or => result || _condition[i].Evaluate(),
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException(nameof(_relation), _relation, "Unknown relation type"),
           };
         }
       }
