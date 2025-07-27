@@ -103,9 +103,8 @@ namespace JinToliq.Umvvm.View
     {
       var go = Get(key);
       var trans = go.transform;
-      var originalScale = trans.localScale;
-      trans.SetParent(parent);
-      trans.localScale = originalScale;
+      trans.SetParent(parent, true);
+      trans.localScale = _registry[key].Original.transform.localScale;
       return go;
     }
 
@@ -147,7 +146,7 @@ namespace JinToliq.Umvvm.View
 
         instance.SetActive(false);
         bucket.Pooled.Push(instance);
-        instance.transform.SetParent(transform);
+        instance.transform.SetParent(transform, true);
         break;
       }
     }

@@ -78,7 +78,9 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Injecting context before CurrentState is set in all scenarios
 ## [4.0.4] 2025-07-27
 ### Improved reliability of ConditionalBindings
-## [4.0.5] 2025-07-28
+## [4.0.5] 2025-07-27
 ### Improved reliability of ConditionalBindings
 ## [4.0.6] 2025-07-27
 ### Improved reliability of ConditionalBindings
+## [4.0.7] 2025-07-27
+### Fixed pooled ui scale change
