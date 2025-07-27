@@ -7,7 +7,7 @@ namespace JinToliq.Umvvm.View.Binding.Specific
   {
     [SerializeField] private GameObject _target;
 
-    protected override bool AlwaysActiveForChange => true;
+    protected override bool IsAlwaysActiveForChange => true;
 
     protected override void OnEvaluated(bool result) => _target.SetActive(result);
 

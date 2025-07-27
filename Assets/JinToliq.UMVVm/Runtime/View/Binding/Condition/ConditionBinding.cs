@@ -42,12 +42,19 @@ namespace JinToliq.Umvvm.View.Binding.Condition
     {
       foreach (var item in _condition)
       {
-        item.Bind(this);
         item.Changed += Evaluate;
+        item.Bind(this);
       }
     }
 
-    protected override void OnEnabled() => Evaluate();
+    protected override void OnBound()
+    {
+      base.OnBound();
+      Evaluate();
+    }
+
+    protected override void OnEnabled() =>
+      Evaluate();
 
     protected override void Unbind()
     {
@@ -63,7 +70,7 @@ namespace JinToliq.Umvvm.View.Binding.Condition
     private void Evaluate()
     {
       if (_condition is null || _condition.Length < 1)
-        throw new Exception("Conditions not set");
+        throw new("Conditions not set");
 
       var result = _condition[0].Evaluate();
       if (_condition.Length > 1)

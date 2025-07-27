@@ -9,7 +9,7 @@ namespace JinToliq.Umvvm.View.Binding
   {
     private IDataView _view;
 
-    protected virtual bool AlwaysActiveForChange => false;
+    protected virtual bool IsAlwaysActiveForChange => false;
     protected bool IsBound { get; private set; }
     protected string MasterPath { get; private set; }
 
@@ -27,27 +27,30 @@ namespace JinToliq.Umvvm.View.Binding
 
     protected virtual void Unbind() {}
 
+    protected virtual void OnUnbound() {}
+
     protected virtual void OnAwakened() {}
 
     protected virtual void OnEnabled() {}
 
     protected virtual void OnDisabled(bool wasBound) {}
 
+    protected virtual void OnDestroyed() {}
+
     private void Awake()
     {
       _view = GetView();
       MasterPath = GetMasterPath();
       OnAwakened();
+
+      if (IsAlwaysActiveForChange)
+        BindInternal();
     }
 
     private void OnEnable()
     {
-      if (!IsBound)
-      {
-        Bind();
-        OnBound();
-        IsBound = true;
-      }
+      if (!IsAlwaysActiveForChange)
+        BindInternal();
 
       OnEnabled();
     }
@@ -55,26 +58,41 @@ namespace JinToliq.Umvvm.View.Binding
     private void OnDisable()
     {
       var wasBound = IsBound;
-      if (!AlwaysActiveForChange && wasBound)
-      {
-        Unbind();
-        IsBound = false;
-      }
+      if (!IsAlwaysActiveForChange)
+        UnbindInternal();
 
       OnDisabled(wasBound);
     }
 
     private void OnDestroy()
     {
+      UnbindInternal();
+      OnDestroyed();
+    }
+
+    private void BindInternal()
+    {
+      if (IsBound)
+        return;
+
+      Bind();
+      IsBound = true;
+      OnBound();
+    }
+
+    private void UnbindInternal()
+    {
       if (!IsBound)
         return;
 
       Unbind();
       IsBound = false;
+      OnUnbound();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private IDataView GetView() => (GetComponent<IDataView>() ?? GetComponentInParent<IDataView>());
+    private IDataView GetView() =>
+      GetComponent<IDataView>() ?? GetComponentInParent<IDataView>();
 
     private string GetMasterPath()
     {

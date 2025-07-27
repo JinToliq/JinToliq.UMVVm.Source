@@ -49,10 +49,8 @@ namespace JinToliq.Umvvm.View.Binding.Condition
 
     public string ToInspectString() => _property is null ? "" : $"{_path}: {_property.GetValue()?.ToString() ?? "null"}";
 
-    protected void OnChanged(Property property)
-    {
+    protected void OnChanged(Property property) =>
       Changed!.Invoke();
-    }
 
     private bool EvaluateDirect(object input)
     {
