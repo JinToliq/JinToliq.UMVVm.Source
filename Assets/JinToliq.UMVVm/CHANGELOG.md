@@ -84,3 +84,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Improved reliability of ConditionalBindings
 ## [4.0.7] 2025-07-27
 ### Fixed pooled ui scale change
+## [4.0.8] 2025-11-01
+### Improved pooling reliability, pool cleaning on scene unload

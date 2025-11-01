@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace JinToliq.Umvvm.View
 {
-  public class OnScenePool : MonoBehaviour
+  public class UiPool : MonoBehaviour
   {
     private class Bucket
     {
@@ -20,16 +21,24 @@ namespace JinToliq.Umvvm.View
       }
     }
 
-    public static OnScenePool Instance => LazyInstance.Value;
-    private static readonly Lazy<OnScenePool> LazyInstance = new(Factory);
+    public static UiPool Instance => LazyInstance.Value;
+    private static readonly Lazy<UiPool> LazyInstance = new(Factory);
     private readonly Dictionary<string, Bucket> _registry = new();
+    private readonly Dictionary<GameObject, Bucket> _used = new();
+    private readonly List<GameObject> _returnList = new();
 
-    private static OnScenePool Factory()
+    private static UiPool Factory()
     {
-      var result = new GameObject("UiPool").AddComponent<OnScenePool>();
-      result.gameObject.SetActive(false);
+      var result = new GameObject("UiPool").AddComponent<UiPool>();
+      DontDestroyOnLoad(result.gameObject);
       return result;
     }
+
+    private void Awake() =>
+      SceneManager.sceneUnloaded += OnSceneUnloaded;
+
+    private void OnDestroy() =>
+      SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
     public void EnsureRegistered(GameObject original, int count = 1)
     {
@@ -89,7 +98,7 @@ namespace JinToliq.Umvvm.View
 
     public T Get<T>(string key) where T : Component
     {
-      var go = Get(key);
+      var go = GetInternal(key, null);
       return go.GetComponent<T>();
     }
 
@@ -101,60 +110,100 @@ namespace JinToliq.Umvvm.View
 
     public GameObject Get(string key, Transform parent)
     {
-      var go = Get(key);
+      var go = GetInternal(key, null);
       var trans = go.transform;
       trans.SetParent(parent, true);
       trans.localScale = _registry[key].Original.transform.localScale;
       return go;
     }
 
-    public GameObject Get(string key, GameObject original = null)
+    public GameObject Get(string key, GameObject original = null) =>
+      GetInternal(key, original);
+
+    public void Recycle(Component instance) =>
+      RecycleInternal(instance.gameObject);
+
+    public void Recycle(Transform instance) =>
+      RecycleInternal(instance.gameObject);
+
+    public void Recycle(GameObject instance) =>
+      RecycleInternal(instance);
+
+    private void LateUpdate()
+    {
+      if (_registry.Count == 0)
+        return;
+
+      foreach (var item in _returnList)
+      {
+        if (!_used.Remove(item, out var bucket))
+        {
+          Debug.LogWarning("Recycling an unused GameObject that was not found");
+          continue;
+        }
+
+        if (!bucket.Used.Remove(item))
+        {
+          Debug.LogWarning("Recycling an unused GameObject that was not found in the bucket");
+          continue;
+        }
+
+        bucket.Pooled.Push(item);
+        item.transform.SetParent(transform, true);
+      }
+    }
+
+    private GameObject GetInternal(string key, GameObject original)
     {
       RegisterKeyIfNeeded(key, original);
 
       var bucket = _registry[key];
       if (!bucket.Pooled.TryPop(out var instance))
       {
+        var originalActive = bucket.Original.gameObject.activeSelf;
+        bucket.Original.gameObject.SetActive(false);
         instance = Instantiate(bucket.Original, transform);
-        instance.name = $"{key} ({bucket.Pooled.Count + bucket.Used.Count})";
+        bucket.Original.gameObject.SetActive(originalActive);
+        var id = bucket.Pooled.Count + bucket.Used.Count;
+        instance.name = $"{key} ({id.ToString()})";
         instance.SetActive(false);
+
+        if (instance.gameObject.activeSelf)
+        {
+          Debug.LogWarning("Instantiated an enabled GameObject what was not expected");
+          instance.SetActive(false);
+        }
       }
 
+      _used.Add(instance, bucket);
       bucket.Used.Add(instance);
       return instance;
     }
 
-    public void Recycle(Component instance) => Recycle(instance.gameObject);
-
-    public void Recycle(Transform instance) => Recycle(instance.gameObject);
-
-    public void Recycle(GameObject instance)
+    private void RecycleInternal(GameObject instance)
     {
       if (instance == null)
         return;
 
-      if (gameObject == null)
-      {
-        Destroy(instance);
-        return;
-      }
-
-      foreach (var bucket in _registry.Values)
-      {
-        if (!bucket.Used.Remove(instance))
-          continue;
-
-        instance.SetActive(false);
-        bucket.Pooled.Push(instance);
-        instance.transform.SetParent(transform, true);
-        break;
-      }
+      instance.SetActive(false);
+      _returnList.Add(instance);
     }
 
     private void RegisterKeyIfNeeded(string key, GameObject original)
     {
       if (!_registry.ContainsKey(key))
         _registry.Add(key, new(original));
+    }
+
+    private void OnSceneUnloaded(Scene scene)
+    {
+      foreach (var bucket in _registry.Values)
+      {
+        foreach (var item in bucket.Pooled)
+          Destroy(item);
+
+        bucket.Pooled.Clear();
+      }
     }
   }
 }
