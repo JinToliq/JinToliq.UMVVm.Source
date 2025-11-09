@@ -62,10 +62,13 @@ namespace JinToliq.Umvvm.ViewModel
     public void SetStateObject(object state)
     {
       if (state is null)
+      {
         CurrentState = default;
+        return;
+      }
 
       if (state is not TState typedState)
-        throw new ArgumentException($"State object is not of type {typeof(TState)}");
+        throw new ArgumentException($"State object has type {state.GetType()} but {typeof(TState)} is required for context {GetType().Name}");
 
       CurrentState = typedState;
     }
