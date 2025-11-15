@@ -80,7 +80,7 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Improved reliability of ConditionalBindings
 ## [4.0.5] 2025-07-27
 ### Improved reliability of ConditionalBindings
-## [4.0.6] 2025-07-27
+## [4.0.6] 2025-07-27~~~~
 ### Improved reliability of ConditionalBindings
 ## [4.0.7] 2025-07-27
 ### Fixed pooled ui scale change
@@ -90,3 +90,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Improved error tracking for context state setting
 ## [4.0.10] 2025-11-15
 ### Introduced Context.Registrator adding code style sugar for property registration process
+## [4.0.11] 2025-11-15
+### Added GetRegistrator method to Context

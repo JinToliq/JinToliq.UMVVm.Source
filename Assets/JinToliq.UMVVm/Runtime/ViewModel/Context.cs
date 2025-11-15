@@ -83,9 +83,12 @@ namespace JinToliq.Umvvm.ViewModel
     public const char ParentContextMarker = '#';
     public const char ChildContextMarker = '.';
 
-    public struct Registrator
+    public readonly struct Registrator
     {
-      private Context _context;
+      private readonly Context _context;
+
+      public Registrator(Context context) =>
+        _context = context;
 
       public Registrator Property(Property property)
       {
@@ -122,6 +125,9 @@ namespace JinToliq.Umvvm.ViewModel
     private Dictionary<string, Property> _properties;
     private Dictionary<string, ICommand> _commands;
     private Dictionary<string, IContext> _contexts;
+
+    protected Registrator GetRegistrator() =>
+      new(this);
 
     public virtual bool LifecycleIsManagedByParent => true;
 
