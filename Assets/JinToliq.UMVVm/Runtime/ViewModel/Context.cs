@@ -83,6 +83,41 @@ namespace JinToliq.Umvvm.ViewModel
     public const char ParentContextMarker = '#';
     public const char ChildContextMarker = '.';
 
+    public struct Registrator
+    {
+      private Context _context;
+
+      public Registrator Property(Property property)
+      {
+        _context.RegisterProperty(property);
+        return this;
+      }
+
+      public Registrator Property(ProperyBatch propertyBatch)
+      {
+        _context.RegisterProperty(propertyBatch);
+        return this;
+      }
+
+      public Registrator Command(string name, Action action)
+      {
+        _context.RegisterCommand(name, action);
+        return this;
+      }
+
+      public Registrator Command<TArg>(string name, Action<TArg> action)
+      {
+        _context.RegisterCommand(name, action);
+        return this;
+      }
+
+      public Registrator Context(string name, IContext context)
+      {
+        _context.RegisterContext(name, context);
+        return this;
+      }
+    }
+
     private IContext _parent;
     private Dictionary<string, Property> _properties;
     private Dictionary<string, ICommand> _commands;
@@ -243,12 +278,6 @@ namespace JinToliq.Umvvm.ViewModel
     {
       foreach (var property in propertyBatch.Properties)
         RegisterProperty(property);
-    }
-
-    protected void RegisterProperties(params Property[] properties)
-    {
-      foreach (var item in properties)
-        RegisterProperty(item);
     }
 
     protected void RegisterCommand(string name, Action action)

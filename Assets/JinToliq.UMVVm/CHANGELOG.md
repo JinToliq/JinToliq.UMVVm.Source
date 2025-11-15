@@ -88,3 +88,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Improved pooling reliability, pool cleaning on scene unload
 ## [4.0.9] 2025-11-01
 ### Improved error tracking for context state setting
+## [4.0.10] 2025-11-15
+### Introduced Context.Registrator adding code style sugar for property registration process
