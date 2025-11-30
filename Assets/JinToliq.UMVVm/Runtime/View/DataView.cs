@@ -89,4 +89,11 @@ namespace JinToliq.Umvvm.View
       OnAwake();
     }
   }
+
+  public abstract class DataView<TContext, TState> : DataView<TContext>
+    where TContext : Context, IContextWithState<TState>, new()
+  {
+    public void SetState(TState state) =>
+      SetState<TState>(state);
+  }
 }

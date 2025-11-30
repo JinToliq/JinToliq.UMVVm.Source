@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using JinToliq.Umvvm.ViewModel;
 using UnityEngine;
@@ -111,6 +112,8 @@ namespace JinToliq.Umvvm.View.Binding.Condition
           return EvaluateNumber(doubleValue);
         case Enum enumValue:
           return EvaluateEnum(enumValue);
+        case ICollection collectionValue:
+          return EvaluateCollection(collectionValue);
         default:
           throw new ArgumentOutOfRangeException(nameof(input), _property.GetDataType().Name, "Unhandled property value type");
       }
@@ -226,6 +229,25 @@ namespace JinToliq.Umvvm.View.Binding.Condition
         case ConditionType.Empty:
         default:
           throw new ArgumentOutOfRangeException(nameof(_condition), _condition, "Unhandled condition type for enum evaluation");
+      }
+    }
+
+    private bool EvaluateCollection(ICollection collectionValue)
+    {
+      switch (_condition)
+      {
+        case ConditionType.Bool:
+          return collectionValue.Count > 0;
+        case ConditionType.Equals:
+          return collectionValue.Count == int.Parse(_value);
+        case ConditionType.Greater:
+          return collectionValue.Count > int.Parse(_value);
+        case ConditionType.Empty:
+          return collectionValue.Count == 0;
+
+        case ConditionType.HasFlag:
+        default:
+          throw new("Unhandled condition type for collection evaluation. Condition: " + _condition);
       }
     }
   }
