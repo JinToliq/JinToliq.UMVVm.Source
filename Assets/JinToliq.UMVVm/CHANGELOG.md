@@ -86,5 +86,11 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Fixed pooled ui scale change
 ## [4.0.8] 2025-11-01
 ### Improved pooling reliability, pool cleaning on scene unload
-## [4.0.9] 2025-11-30
+## [4.0.9] 2025-11-01
+### Improved error tracking for context state setting
+## [4.0.10] 2025-11-15
+### Introduced Context.Registrator adding code style sugar for property registration process
+## [4.0.11] 2025-11-15
+### Added GetRegistrator method to Context
+## [4.0.12] 2025-11-30
 ### Added support for collection properties in ConditionBinding
