@@ -40,7 +40,7 @@ namespace JinToliq.Umvvm.View.Binding.Specific
       if (value is not ICollection collection || collection.Count == 0)
       {
         foreach (var instance in _instances)
-          UiPool.Instance.Recycle(instance);
+          ViewPool.Recycle(_prefab, instance);
 
         _instances.Clear();
         return;
@@ -62,8 +62,7 @@ namespace JinToliq.Umvvm.View.Binding.Specific
         for (var i = oldCount - 1; i >= newCount; i--)
         {
           var instance = _instances[i];
-
-          UiPool.Instance.Recycle(instance);
+          ViewPool.Recycle(_prefab, instance);
           _instances.RemoveAt(i);
         }
       }
@@ -71,7 +70,7 @@ namespace JinToliq.Umvvm.View.Binding.Specific
       {
         for (var i = oldCount; i < newCount; i++)
         {
-          var instance = UiPool.Instance.Get<DataView>(_prefab, _parent);
+          var instance = ViewPool.Get<DataView>(_prefab, _parent);
           if (instance == null)
           {
             Debug.LogError($"Failed to instantiate prefab {_prefab.name} or find root component of type {typeof(DataView)} when instantiating views for collection binding");

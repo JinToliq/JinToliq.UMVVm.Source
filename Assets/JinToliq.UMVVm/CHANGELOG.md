@@ -94,3 +94,5 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Added GetRegistrator method to Context
 ## [4.0.12] 2025-11-30
 ### Added support for collection properties in ConditionBinding
+## [4.1.0] 2025-12-18
+### Refactored views pooling system
