@@ -7,31 +7,40 @@ using UnityEngine;
 
 namespace JinToliq.Umvvm.View
 {
-  public abstract class BaseViewManager : MonoBehaviour
+  public abstract class BaseViewService<TStateId> : MonoBehaviour
   {
-    private const string UiViewTypePlaceholder = "{UiViewType}";
+    private const string UiViewTypePlaceholder = "{UiId}";
 
     [SerializeField] private string _resourceSearchPattern = Path.Combine("Prefabs", "UI", UiViewTypePlaceholder, UiViewTypePlaceholder);
     [SerializeField] private Transform _uiViewsContainer;
 
     private readonly List<IUiView> _pool = new();
     private readonly List<(IUiView View, int Index)> _activeUi = new();
+    private readonly EqualityComparer<TStateId> _idComparer = EqualityComparer<TStateId>.Default;
 
     public bool HasOpenedUi => _activeUi.Count > 0;
 
-    public bool IsLastOpenedState(Enum type) => _activeUi.Count > 0 && _activeUi[^1].View.BaseName.Equals(type);
+    public bool IsLastOpenedState(TStateId id)
+    {
+      if (_activeUi.Count < 1)
+        return false;
 
-    public IUiView GetLastOpenedUi() => _activeUi.Count > 0 ? _activeUi[^1].View : null;
+      var last = _activeUi[^1].View;
+      return last is IUiView<TStateId> typedLast && _idComparer.Equals(typedLast.Id, id);
+    }
 
-    protected abstract IUiView GetNewView(Enum type);
+    public IUiView GetLastOpenedUi() =>
+      _activeUi.Count > 0 ? _activeUi[^1].View : null;
+
+    protected abstract IUiView GetNewView(TStateId id);
     protected virtual void OnUiOpened(IUiView view) {}
     protected virtual void OnUiClosed(IUiView view) {}
     protected virtual void OnUiShown(IUiView view) {}
     protected virtual void OnUiHidden(IUiView view) {}
 
-    protected IUiView GetFromResources(Enum type)
+    protected IUiView GetFromResources(TStateId id)
     {
-      var path = GetResourcesUiPath(type);
+      var path = GetResourcesUiPath(id);
       var template = Resources.Load<GameObject>(path);
       if (template == null)
         throw new($"No UI prefab found by path: {Path.Combine("Resources", path)}");
@@ -47,7 +56,7 @@ namespace JinToliq.Umvvm.View
       return view;
     }
 
-    protected virtual string GetResourcesUiPath(Enum type)
+    protected virtual string GetResourcesUiPath(TStateId id)
     {
       if (string.IsNullOrEmpty(_resourceSearchPattern))
         throw new("ResourceSearchPattern field should be set");
@@ -55,18 +64,28 @@ namespace JinToliq.Umvvm.View
       if (!_resourceSearchPattern.Contains(UiViewTypePlaceholder))
         throw new($"ResourceSearchPattern field should contain '{UiViewTypePlaceholder}' placeholder");
 
-      var path = _resourceSearchPattern.Replace(UiViewTypePlaceholder, type.ToString(), StringComparison.OrdinalIgnoreCase);
+      var path = _resourceSearchPattern.Replace(UiViewTypePlaceholder, id.ToString(), StringComparison.OrdinalIgnoreCase);
       return Path.Combine(path.Split('\\', '/'));
     }
 
-    public void OpenUi(UiState state)
+    public void OpenUi(UiState<TStateId> state)
     {
       IUiView view;
       RectTransform viewTransform;
-      var pooledIndex = _pool.FindIndex(p => p.BaseName.Equals(state.Type));
+
+      var pooledIndex = -1;
+      for (var i = 0; i < _pool.Count; i++)
+      {
+        if (!_idComparer.Equals(((IUiView<TStateId>)_pool[i]).Id, state.Id))
+          continue;
+
+        pooledIndex = i;
+        break;
+      }
+
       if (pooledIndex < 0)
       {
-        view = GetNewView(state.Type);
+        view = GetNewView(state.Id);
         viewTransform = view.GetTransform();
         viewTransform.SetParent(_uiViewsContainer);
       }
@@ -104,9 +123,21 @@ namespace JinToliq.Umvvm.View
       }
     }
 
-    public void CloseUi(UiState state)
+    public void CloseUi(UiState<TStateId> state)
     {
-      var index = _activeUi.FindIndex(p => p.Index == state.Index && p.View.BaseName.Equals(state.Type));
+      var index = -1;
+      for (var i = 0; i < _activeUi.Count; i++)
+      {
+        var item = _activeUi[i];
+        if (!_idComparer.Equals(((IUiView<TStateId>)item.View).Id, state.Id))
+          continue;
+        if (item.Index != state.Index)
+          continue;
+
+        index = i;
+        break;
+      }
+
       if (index < 0)
         return;
 

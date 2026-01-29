@@ -96,3 +96,4 @@ In UiType filed on view to define if opened Ui element should hide all previous 
 ### Added support for collection properties in ConditionBinding
 ## [4.1.0] 2025-12-18
 ### Refactored views pooling system
+## [5.0.0] Refactored base ViewModelManager and ViewManager to support multiple implementations based on generic argument value. Renamed from managers to services

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using JinToliq.Umvvm.ViewModel;
 using UnityEngine;
 
@@ -8,7 +7,6 @@ namespace JinToliq.Umvvm.View
   public interface IUiView
   {
     UiType UiType { get; }
-    Enum BaseName { get; }
 
     public void Open();
     public void OpenWithState(object state);
@@ -22,18 +20,16 @@ namespace JinToliq.Umvvm.View
     IEnumerator OnHide();
   }
 
-  public interface IUiView<out TType> : IUiView where TType : Enum
+  public interface IUiView<out TId> : IUiView
   {
-    TType Name { get; }
-
-    Enum IUiView.BaseName => Name;
+    TId Id { get; }
   }
 
-  public abstract class UiView<TType> : DataView, IUiView<TType> where TType : Enum
+  public abstract class UiView<TId> : DataView, IUiView<TId>
   {
     [SerializeField] private UiType _uiType;
 
-    public abstract TType Name { get; }
+    public abstract TId Id { get; }
 
     public UiType UiType => _uiType;
 
@@ -45,34 +41,21 @@ namespace JinToliq.Umvvm.View
 
     public RectTransform GetTransform() => GetComponent<RectTransform>();
 
-    public IEnumerator OnOpen()
-    {
-      yield break;
-    }
+    public virtual IEnumerator OnOpen() { yield break; }
 
-    public IEnumerator OnClose()
-    {
-      yield break;
-    }
+    public virtual IEnumerator OnClose() { yield break; }
 
-    public IEnumerator OnShow()
-    {
-      yield break;
-    }
+    public virtual IEnumerator OnShow() { yield break; }
 
-    public IEnumerator OnHide()
-    {
-      yield break;
-    }
+    public virtual IEnumerator OnHide() { yield break; }
   }
 
-  public abstract class UiView<TType, TContext> : DataView<TContext>, IUiView<TType>
-    where TType : Enum
+  public abstract class UiView<TId, TContext> : DataView<TContext>, IUiView<TId>
     where TContext : Context, new()
   {
     [SerializeField] private UiType _uiType;
 
-    public abstract TType Name { get; }
+    public abstract TId Id { get; }
     public UiType UiType => _uiType;
 
     public void Open() => gameObject.SetActive(true);
@@ -87,24 +70,12 @@ namespace JinToliq.Umvvm.View
 
     public RectTransform GetTransform() => GetComponent<RectTransform>();
 
-    public IEnumerator OnOpen()
-    {
-      yield break;
-    }
+    public virtual IEnumerator OnOpen() { yield break; }
 
-    public IEnumerator OnClose()
-    {
-      yield break;
-    }
+    public virtual IEnumerator OnClose() { yield break; }
 
-    public IEnumerator OnShow()
-    {
-      yield break;
-    }
+    public virtual IEnumerator OnShow() { yield break; }
 
-    public IEnumerator OnHide()
-    {
-      yield break;
-    }
+    public virtual IEnumerator OnHide() { yield break; }
   }
 }

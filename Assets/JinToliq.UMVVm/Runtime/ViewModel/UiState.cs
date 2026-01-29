@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace JinToliq.Umvvm.ViewModel
+﻿namespace JinToliq.Umvvm.ViewModel
 {
   public enum UiType
   {
@@ -8,15 +6,15 @@ namespace JinToliq.Umvvm.ViewModel
     OpenNewWindow,
   }
 
-  public class UiState
+  public class UiState<TStateId>
   {
-    public readonly Enum Type;
+    public readonly TStateId Id;
     public readonly int Index;
     public readonly object OpenWithState;
 
-    public UiState(Enum type, int index, object openWithState = null)
+    public UiState(TStateId id, int index, object openWithState = null)
     {
-      Type = type;
+      Id = id;
       Index = index;
       OpenWithState = openWithState;
     }
